@@ -1,6 +1,7 @@
 import urllib2
 import nltk
 import string
+import time
 
 
 def get_page_info(page):
@@ -55,9 +56,14 @@ def get_links(page_html):
 def crawler(start_page, url_rank, corpus, print_detail=False):
     to_crawl = [start_page]
     counter = 1
+    t0 = time.time()
     while True:
-        if counter%100 == 0:
-            answer = raw_input('100 pages added. Continue? (y/n):\n')
+        #Keep track, 1000 websites a time
+        if counter%1000 == 0:
+            t1 = time.time()
+            print 'Time: %s seconds' % (t1-t0)
+            t0 = time.time()
+            answer = raw_input('1000 pages added. Continue? (y/n):\n')
             if answer == 'n':
                 break
     
@@ -71,6 +77,7 @@ def crawler(start_page, url_rank, corpus, print_detail=False):
         else:
             break
 
+        print counter, page, len(corpus), len(url_rank)
         #Get page information
         links, words = get_page_info(page)
         
@@ -106,7 +113,7 @@ def crawler(start_page, url_rank, corpus, print_detail=False):
 def update_corpus(seed, url_rank, corpus):
     
     #Generate corpus
-    url_rank, corpus = crawler(seed, url_rank, corpus, print_detail=True)
+    url_rank, corpus = crawler(seed, url_rank, corpus)
     print 'Corpus generated'
 
     print 'Sorting corpus...'
@@ -155,6 +162,8 @@ def write_file(url_rank, corpus):
         for key_results in corpus.items():
             url_csv = ','.join(key_results[1])
             line_csv = '%s,%s\n' % (key_results[0],url_csv)
+            if isinstance(line_csv, unicode):
+                print 'Unicode: %s' % line_csv
             corpus_file.write(line_csv)
 
         #Write to PageRank
@@ -190,5 +199,6 @@ def run(seed):
     
 
 if __name__ == '__main__':
-    run('http://www.xkcd.com')
+    #print get_page_info('http://www.amazon.com/gp/product/0961392142')
+    run('http://news.ycombinator.com')
     

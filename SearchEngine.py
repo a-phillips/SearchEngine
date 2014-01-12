@@ -1,54 +1,32 @@
-import urllib2
+import string
 
-
-def get_links(page):
-    try:
-        page_source = urllib2.urlopen(page).read()
-    except:
-        return []
-    links = []
-    while True:
-        start_tag = page_source.find('<a href=')
-        start_url = page_source.find('"', start_tag)+1
-        end_url = page_source.find('"', start_url)
-        url = page_source[start_url:end_url]
-        if url:
-            if url[:4] == 'http':
-                links.append(url)
-        else:
-            break
-        page_source = page_source[end_url:]
-    return links
-
-def crawler(start_page):
-    crawled = dict()
-    to_crawl = [start_page]
-    i = 1
-    while i < 40:
-        for new_link in to_crawl:
-            if not crawled.get(new_link):
-                page = new_link
-                break
-        else:
-            break
-        page_links = get_links(page)
-        print 'crawler len %s, page no. %s: %s' % (len(crawled), i, page)
-        for link in page_links:
-            if crawled.get(link):
-                crawled[link] += 1
-            elif link not in to_crawl:
-                to_crawl.append(link)
-        crawled[page] = 1
-        try:
-            page = to_crawl.pop(0)
-        except:
-            break
-        i += 1
-    print 'The crawler has finished!'
-    print 'Results:'
-    for key, value in crawled.items():
-        print key, value
+corpus = dict()
+with open('Corpus/Corpus.txt','r') as raw_corp:
+    #First value is keyword, all others are urls
+    print 'Loading corpus...'
+    for line in raw_corp.read().splitlines():
+        if line:
+            line_split = line.split(',')
+            corpus[line_split[0]] = line_split[1:]
+    print 'Corpus loaded.'
+    print ''
+    
+def run():
+    query = raw_input('Please enter your search term:\n')
+    query = query.lower()
+    query = query.strip(string.punctuation)
+    query = query.strip(string.whitespace)
+    results = corpus.get(query)
+    if results:
+        print 'Your results for "%s":' % query
+        print '\n'.join(results)          
+    
+    
 
 if __name__ == '__main__':
-    #crawler('http://www.udacity.com/cs101x/index.html')
-    crawler('http://www.xkcd.com')
+    search = 'y'
+    print 'Welcome to the search engine!'
+    while search == 'y':        
+        run()
+        search = raw_input('Search again?\n')
+        
